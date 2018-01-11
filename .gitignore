@@ -153,3 +153,5 @@ fabric.properties
 \.idea/zbaviewer\.iml
 
 \.idea/
+
+data/
