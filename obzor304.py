@@ -35,7 +35,8 @@ class Obzor304:
     def measure(self, n: int):
         meas_file_name = self._folder + "\\" + "lpf_obr2_" + str(n).zfill(3) + ".s2p"
         print("OBZOR-304: запускаем измерение:", self._inst.write("INIT1"))
-        sleep(0.5)
+        # TODO: get confirmation for measurement end
+        sleep(1.5)
         # freqs = planar.query("SENS:FREQ:DATA?")
         # amps = planar.query("CALC1:DATA:FDAT?")
         # print("freqs:", freqs.count(",") + 1, freqs)
