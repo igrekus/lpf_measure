@@ -1,15 +1,15 @@
 import sys
 import serial
 import xlsxwriter
-
 from os import listdir
 from os.path import isfile, join, isdir, exists
-import matplotlib
+from PyQt5.QtWidgets import QApplication
 from matplotlib import pyplot as plt
-
+from mainwindow import MainWindow
 # from time import sleep
 from arduino import Arduino
 from obzor304 import Obzor304
+import matplotlib
 
 COMMAND = "LPF,"
 OSC_ADDR = "TCPIP::192.168.0.3::INSTR"
@@ -235,8 +235,13 @@ def usage():
           "спектроанализатору OBZOR 304\n"
           "    /stats <dir>      - провести статобработку .s2p файлов в <dir>")
 
-def main(args):
+def start_gui():
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
 
+def main(args):
     if len(args) > 1:
         if args[1] == "/stats":
             if len(args) > 2:
@@ -247,6 +252,7 @@ def main(args):
             measure()
     else:
         usage()
+        start_gui()
 
 if __name__ == '__main__':
     main(sys.argv)
