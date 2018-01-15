@@ -42,7 +42,8 @@ class MainWindow(QMainWindow):
 
     # UI utility methods
     def refreshView(self):
-        twidth = self.ui.tableSuggestions.frameGeometry().width() - 30
+        pass
+        # twidth = self.ui.tableSuggestions.frameGeometry().width() - 30
         # self.ui.tableSuggestions.setColumnWidth(0, twidth * 0.05)
         # self.ui.tableSuggestions.setColumnWidth(1, twidth * 0.10)
         # self.ui.tableSuggestions.setColumnWidth(2, twidth * 0.55)

@@ -19,9 +19,8 @@ def log(msg: str):
     print(msg)
 
 def find_available_ports():
-    """ Lists serial port names
-        :raises EnvironmentError:
-            On unsupported or unknown platforms
+    """
+        Lists serial port names
         :returns:
             A list of the serial ports available on the system
     """
