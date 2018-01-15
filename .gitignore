@@ -156,6 +156,10 @@ fabric.properties
 
 data/
 
+venv1/
+
+venv/
+
 cutoff_delta\.xlsx
 
 cutoff_freq\.xlsx
