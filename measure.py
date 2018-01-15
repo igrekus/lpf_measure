@@ -1,12 +1,13 @@
 import sys
 import serial
-import xlsxwriter
 from os import listdir
 from os.path import isfile, join, isdir, exists
 from PyQt5.QtWidgets import QApplication
 from matplotlib import pyplot as plt
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavToolbar
+
 from mainwindow import MainWindow
-# from time import sleep
 from arduino import Arduino
 from obzor304 import Obzor304
 import matplotlib
@@ -14,6 +15,17 @@ import matplotlib
 COMMAND = "LPF,"
 OSC_ADDR = "TCPIP::192.168.0.3::INSTR"
 MAXREG = 127
+
+canvas11 = None
+canvas12 = None
+canvas22 = None
+toolbar11 = None
+toolbar12 = None
+toolbar22 = None
+cutoff_freq_x = list()
+cutoff_freq_y = list()
+cutoff_freq_delta_x = list()
+cutoff_freq_delta_y = list()
 
 def log(msg: str):
     print(msg)
@@ -123,39 +135,6 @@ def process_stats(work_dir: str):
             l.append(d)
         return l
 
-    def export_to_xlsx(cutoff_x, cutoff_y, delta_x, delta_y):
-
-        def write_file(name, a1, b1, xlist, ylist):
-            wb = xlsxwriter.Workbook(name)
-            ws = wb.add_worksheet("Sheet1")
-
-            ws.write("A1", a1)
-            ws.write("B1", b1)
-
-            start_row = 0
-            row = 0
-            for x, y in zip(xlist, ylist):
-                row += 1
-                ws.write(start_row + row, 0, x)
-                ws.write(start_row + row, 1, y)
-
-            chart = wb.add_chart({"type": "scatter",
-                                  "subtype": "smooth"})
-            chart.add_series({"name": "Sheet1!$B$1",
-                              "categories": "=Sheet1!$A$2:$A$" + str(row + 1),
-                              "values": "=Sheet1!$B$2:$B$" + str(row + 1)})
-            chart.set_x_axis({"name": a1})
-            chart.set_y_axis({"name": b1})
-            ws.insert_chart("D3", chart)
-
-            wb.close()
-
-        cutoff_file_name = "cutoff_freq.xlsx"
-        delta_file_name = "cutoff_delta.xlsx"
-
-        write_file(cutoff_file_name, "Код", "Частота среза", cutoff_x, cutoff_y)
-        write_file(delta_file_name, "Код", "Дельта", delta_x, delta_y)
-
     MHz = 1000000
 
     if not exists(work_dir) or not isdir(work_dir):
@@ -177,24 +156,25 @@ def process_stats(work_dir: str):
     freq, amp = parse_files(work_dir)
 
     print("Ищем частоту среза.")
+    global cutoff_freq_x
+    global cutoff_freq_y
     cutoff_freq_y = calc_cutoff_freq()
     cutoff_freq_x = range(len(cutoff_freq_y))
 
+    global cutoff_freq_delta_x
+    global cutoff_freq_delta_y
     print("Ищем дельту.")
     cutoff_freq_delta_y = calc_cutoff_freq_delta()
     cutoff_freq_delta_x = range(len(cutoff_freq_delta_y))
 
-    print("Пишем .xlsx файлы.")
-    export_to_xlsx(cutoff_freq_x, cutoff_freq_y, cutoff_freq_delta_x, cutoff_freq_delta_y)
-
     print("Строим графики.")
-    matplotlib.use('TkAgg', warn=False, force=True)
-    plt.subplots_adjust(left=0.06, bottom=0.1, right=0.98, top=0.95, hspace=0.4, wspace=0.2)
+    matplotlib.use('Qt5Agg', warn=False, force=True)
 
-    plt.subplot(221)
+    plt.figure(num=1)
     for f, a in zip(freq, amp):
         plt.plot(f, a, color="0.4")
 
+    plt.subplots_adjust(bottom=0.150)
     plt.axhline(-6, 0, 1, linewidth=0.8, color="0.3", linestyle="--")
     plt.yticks(list(plt.yticks()[0]) + [-6])
     plt.title("Коэффициент преобразования")
@@ -205,7 +185,8 @@ def process_stats(work_dir: str):
     plt.grid(b=True, which="minor", color="0.7", linestyle='--')
     plt.grid(b=True, which="major", color="0.5", linestyle='-')
 
-    plt.subplot(222)
+    plt.figure(2)
+    plt.subplots_adjust(bottom=0.150)
     plt.plot(cutoff_freq_x, cutoff_freq_y, color="0.4")
     plt.title("Частота среза")
     plt.xlabel("Код")
@@ -214,18 +195,39 @@ def process_stats(work_dir: str):
     plt.grid(b=True, which="minor", color="0.7", linestyle='--')
     plt.grid(b=True, which="major", color="0.5", linestyle='-')
 
-    plt.subplot(224)
+    plt.figure(3)
+    plt.subplots_adjust(bottom=0.150)
     plt.plot(cutoff_freq_delta_x, cutoff_freq_delta_y, color="0.4")
     plt.title("Дельта частоты среза")
     plt.xlabel("Код")
     plt.ylabel("dF, МГц")
     plt.grid(True)
 
-    print("Сохраняем графики в файл.")
-    plt.savefig("plots.png", dpi=300)
+    figure11 = plt.figure(1)
+    figure12 = plt.figure(2)
+    figure22 = plt.figure(3)
 
-    print("Выводим графики на экран.")
+    global canvas11
+    canvas11 = FigureCanvas(figure11)
+    global canvas12
+    canvas12 = FigureCanvas(figure12)
+    global canvas22
+    canvas22 = FigureCanvas(figure22)
+
+    global toolbar11
+    toolbar11 = NavToolbar(canvas=canvas11, parent=None)
+    global toolbar12
+    toolbar12 = NavToolbar(canvas=canvas12, parent=None)
+    global toolbar22
+    toolbar22 = NavToolbar(canvas=canvas22, parent=None)
+
     plt.show()
+
+    # print("Сохраняем графики в файл.")
+    # plt.savefig("plots.png", dpi=300)
+    #
+    # print("Выводим графики на экран.")
+    # plt.show()
 
 def usage():
     print("\nИспользование: lpt_measure.exe <command>\n\n"
@@ -234,10 +236,24 @@ def usage():
           "спектроанализатору OBZOR 304\n"
           "    /stats <dir>      - провести статобработку .s2p файлов в <dir>")
 
-def start_gui():
+def start_gui(canvas11, canvas12, canvas22, cutoff_freq_x, cutoff_freq_y, cutoff_freq_delta_x, cutoff_freq_delta_y):
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
+    window.ui.vlChart11.addWidget(canvas11)
+    window.ui.vlChart11.addWidget(canvas11.toolbar)
+
+    window.ui.vlChart12.addWidget(canvas12)
+    window.ui.vlChart12.addWidget(canvas12.toolbar)
+
+    window.ui.vlChart22.addWidget(canvas22)
+    window.ui.vlChart22.addWidget(canvas22.toolbar)
+
+    window.cutoff_freq_x = cutoff_freq_x
+    window.cutoff_freq_y = cutoff_freq_y
+    window.cutoff_freq_delta_x = cutoff_freq_delta_x
+    window.cutoff_freq_delta_y = cutoff_freq_delta_y
+
     sys.exit(app.exec_())
 
 def main(args):
@@ -245,13 +261,18 @@ def main(args):
         if args[1] == "/stats":
             if len(args) > 2:
                 process_stats(args[2])
+                start_gui(canvas11=canvas11, canvas12=canvas12, canvas22=canvas22,
+                          cutoff_freq_x=cutoff_freq_x,
+                          cutoff_freq_y=cutoff_freq_y,
+                          cutoff_freq_delta_x=cutoff_freq_delta_x,
+                          cutoff_freq_delta_y=cutoff_freq_delta_y)
             else:
                 usage()
         if args[1] == "/measure":
             measure()
     else:
         usage()
-        start_gui()
+        # start_gui()
 
 if __name__ == '__main__':
     main(sys.argv)

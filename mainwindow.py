@@ -1,7 +1,10 @@
+import subprocess
 import sys
 from PyQt5 import uic
-from PyQt5.QtWidgets import QMainWindow, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QMessageBox, QDialog, QAction
 from PyQt5.QtCore import Qt
+
+from export_xlsx import export_to_excel
 
 
 # TODO record commentaries from other users
@@ -15,9 +18,31 @@ class MainWindow(QMainWindow):
         # create instance variables
         self.ui = uic.loadUi("mainwindow.ui", self)
 
+        self.actExportPng = QAction("Экспорт в .png", self)
+        self.actExportXlsx = QAction("Экспорт в Excel", self)
+
+        # data, make separate stat_processor class
+        self.cutoff_freq_x = list()
+        self.cutoff_freq_y = list()
+        self.cutoff_freq_delta_x = list()
+        self.cutoff_freq_delta_y = list()
+
         self.initDialog()
 
+    def createActions(self):
+        self.actExportPng.setStatusTip("Экспортировать графики в изображение в формате PNG")
+        self.actExportPng.triggered.connect(self.procActExportPng)
+
+        self.actExportXlsx.setStatusTip("Экспортировать графики Excel-таблицу")
+        self.actExportXlsx.triggered.connect(self.procActExportXlsx)
+
+    def setupUiSignals(self):
+        self.ui.btnExportPng.clicked.connect(self.onBtnExportPngClicked)
+        self.ui.btnExportXlsx.clicked.connect(self.onBtnExportXlsxClicked)
+
     def initDialog(self):
+        self.createActions()
+        self.setupUiSignals()
         # init instances
         # self._data_mapper.setModel(self._model_search_proxy)
 
@@ -66,17 +91,23 @@ class MainWindow(QMainWindow):
     def resizeEvent(self, event):
         self.refreshView()
 
-    def onBtnAddClicked(self):
-        pass
+    def onBtnExportPngClicked(self):
+        print("png click")
+        self.actExportPng.trigger()
 
-    def onBtnSaveClicked(self):
-        pass
+    def onBtnExportXlsxClicked(self):
+        print("xlsx click")
+        self.actExportXlsx.trigger()
 
-    def onBtnDelClicked(self):
-        pass
+    def procActExportPng(self):
+        print("png act")
 
-    def onBtnApproveClicked(self):
-        pass
+    def procActExportXlsx(self):
+        print("Пишем .xlsx файлы.")
+        to_export = [("cutoff_freq.xlsx", "Код", "Частота среза", self.cutoff_freq_x, self.cutoff_freq_y),
+                     ("cutoff_delta.xlsx", "Код", "Дельта", self.cutoff_freq_delta_x, self.cutoff_freq_delta_y)]
 
-    def onBtnRejectClicked(self):
-        pass
+        for ex in to_export:
+            export_to_excel(ex)
+
+        subprocess.call("explorer " + '.\\excel\\', shell=True)
