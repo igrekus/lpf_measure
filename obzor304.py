@@ -33,7 +33,7 @@ class Obzor304:
               self._inst.write("MMEM:MDIR " + '"' + self._folder + '"'), "| dir=", self._folder)
 
     def measure(self, n: int):
-        meas_file_name = self._folder + "\\" + "lpf_obr2_" + str(n).zfill(3) + ".s2p"
+        meas_file_name = self._folder + "\\" + "lpf_" + str(n).zfill(3) + ".s2p"
         print("OBZOR-304: запускаем измерение:", self._inst.write("INIT1"))
         # TODO: get confirmation for measurement end
         sleep(1.5)

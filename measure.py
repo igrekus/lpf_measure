@@ -1,3 +1,4 @@
+import random
 import sys
 import serial
 from os import listdir
@@ -11,6 +12,12 @@ from mainwindow import MainWindow
 from arduino import Arduino
 from obzor304 import Obzor304
 import matplotlib
+
+# TODO: get end measure confirmation from analyzer
+# TODO: save png
+# TODO: make config file (instr addresses)
+# TODO: GUI stat analysis
+# TODO: save settings and calibration from analyzer
 
 COMMAND = "LPF,"
 OSC_ADDR = "TCPIP::192.168.0.3::INSTR"
@@ -110,16 +117,24 @@ def process_stats(work_dir: str):
         freq = list()
         amp = list()
         for s2p in s2p_files:
-            freq_data = list()
-            amp_data = list()
             with open(data_path + s2p) as f:
                 lines = f.readlines()[5:]
+                freq_data = list()
+                amp_data = list()
                 for l in lines:
-                    floats = [float(s) for s in l.replace(",", ".").split()]
+                    # print(round(float(l.replace(",", ".").split()[0]) / MHz, 15))
+                    floats = [round(float(s), 15) for s in l.split()]
                     freq_data.append(floats[0] / MHz)
                     amp_data.append(floats[3])
             freq.append(freq_data)
             amp.append(amp_data)
+        # print("freqs2", freq[2])
+        # print("freqs3", freq[3])
+        # print("freqs4", freq[4])
+        #
+        # print("amp2", amp[2])
+        # print("amp3", amp[3])
+        # print("amp4", amp[4])
         return freq, amp
 
     def calc_cutoff_freq():
@@ -130,12 +145,12 @@ def process_stats(work_dir: str):
 
     def calc_cutoff_freq_delta():
         l = list()
-        for i in range(len(cutoff_freq_y[:-1])):
+        for i in range(len(cutoff_freq_y[:-2])):
             d = abs(cutoff_freq_y[i + 1] - cutoff_freq_y[i])
             l.append(d)
         return l
 
-    MHz = 1000000
+    MHz = float(1000000)
 
     if not exists(work_dir) or not isdir(work_dir):
         print("Ощибка: директория", work_dir, "не найдена.")
@@ -221,7 +236,7 @@ def process_stats(work_dir: str):
     global toolbar22
     toolbar22 = NavToolbar(canvas=canvas22, parent=None)
 
-    plt.show()
+    # plt.show()
 
     # print("Сохраняем графики в файл.")
     # plt.savefig("plots.png", dpi=300)

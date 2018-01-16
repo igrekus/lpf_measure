@@ -1,11 +1,16 @@
-import pathlib2 as pt
+import os
+import errno
 import xlsxwriter
 
 def export_to_excel(data):
     fname, xname, yname, xdata, ydata = data
 
     excel_path = ".\\excel\\"
-    pt.Path(excel_path).mkdir(parents=True, exist_ok=True)
+    try:
+        os.makedirs(excel_path)
+    except OSError as ex:
+        if ex.errno != errno.EEXIST:
+            raise
 
     wb = xlsxwriter.Workbook(excel_path + fname)
     ws = wb.add_worksheet("Sheet1")
