@@ -36,8 +36,8 @@ def find_available_ports():
         :returns:
             A list of the serial ports available on the system
     """
-    # ports = ['COM%s' % (i + 1) for i in range(256)]
-    ports = ['COM%s' % (i + 1) for i in range(10)]
+    ports = ['COM%s' % (i + 1) for i in range(256)]
+    # ports = ['COM%s' % (i + 1) for i in range(10)]
     result = []
     for port in ports:
         try:
