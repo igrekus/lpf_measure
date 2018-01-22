@@ -1,5 +1,8 @@
 import random
 import sys
+from time import sleep
+
+import array
 import serial
 from os import listdir
 from os.path import isfile, join, isdir, exists
@@ -291,4 +294,62 @@ def main(args):
 
 if __name__ == '__main__':
     main(sys.argv)
-    # input("\nНажмите Enter для завершения работы.")
+    # input("\nНажмите Enter для завершения работы."))
+
+    # import visa
+    # rm = visa.ResourceManager()
+    # print(rm.list_resources())
+    # dev = rm.open_resource("USB::0x4348::0x5537::SN0::0:RAW")
+    # print(dev)
+
+    import usb
+    dev_list = list(usb.core.find(find_all=True))
+    dev = dev_list[0]
+
+    cfgs = list(dev)
+    cfg = cfgs[0]
+    cfg.set()
+
+    intfs = list(cfg)
+    intf = intfs[0]
+
+    eps = list(intf)
+    print(eps)
+    ep_out = eps[0]
+    ep_in = eps[1]
+
+    # dev.write(ep_in.bEndpointAddress, "*IDN?", intf.bInterfaceNumber)
+    ep_in.write("System:Local\n".encode("ascii"))
+    ep_in.write("SOURce1:Function SQUare\n".encode("ascii"))
+    # ep_in.write("SOURce1:Function SINusoid\n\n".encode("ascii"))
+    # ep_in.write("SOURce1:Function SINusoid\n\n\n".encode("ascii"))
+    # ep_in.write("SOURce1:Function SINusoid\n\n\n\n".encode("ascii"))
+    ep_in.write("OUTPut1:STATe ON\n")
+
+    sleep(1)
+
+    ep_in.write("OUTPut1:STATe OFF\n")
+    # data = ep_out.read(1)
+    # print(data)
+
+    # ep_in.write()
+    # dev.write(ep_in.bEndpointAddress, "#IDN?", intf.bInterfaceNumber)
+
+    # dev = dev_list[0]
+    # cfg = dev[0].set()
+    # for intf in cfg:
+    #     print(intf)
+    # for dev in dev_list:
+    #     for cfg in dev:
+    #         print(cfg)
+
+    # ports = ['COM%s' % (i + 1) for i in range(256)]
+    # result = []
+    # for port in ports:
+    #     try:
+    #         s = serial.Serial(port)
+    #         s.close()
+    #         result.append(port)
+    #     except (OSError, serial.SerialException):
+    #         pass
+    # print(result)
