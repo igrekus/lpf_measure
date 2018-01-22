@@ -21,6 +21,9 @@ import matplotlib
 # TODO: make config file (instr addresses)
 # TODO: GUI stat analysis
 # TODO: save settings and calibration from analyzer
+# TODO: dupe files on a flash drive
+# TODO: track measurement number, write successive measurements to a numbered forlder
+# TODO: stimulate on one freq, measure x2 freq
 
 COMMAND = "LPF,"
 OSC_ADDR = "TCPIP::192.168.0.3::INSTR"
@@ -302,6 +305,7 @@ if __name__ == '__main__':
     # dev = rm.open_resource("USB::0x4348::0x5537::SN0::0:RAW")
     # print(dev)
 
+
     import usb
     dev_list = list(usb.core.find(find_all=True))
     dev = dev_list[0]
@@ -319,9 +323,9 @@ if __name__ == '__main__':
     ep_in = eps[1]
 
     # dev.write(ep_in.bEndpointAddress, "*IDN?", intf.bInterfaceNumber)
-    ep_in.write("System:Local\n".encode("ascii"))
-    ep_in.write("SOURce1:Function SQUare\n".encode("ascii"))
-    # ep_in.write("SOURce1:Function SINusoid\n\n".encode("ascii"))
+    # ep_in.write("System:External\n".encode("ascii"))
+    # ep_in.write("SOURce1:Function SQUare\n".encode("ascii"))
+    ep_in.write("SOURce1:Function SINusoid\n".encode("ascii"))
     # ep_in.write("SOURce1:Function SINusoid\n\n\n".encode("ascii"))
     # ep_in.write("SOURce1:Function SINusoid\n\n\n\n".encode("ascii"))
     ep_in.write("OUTPut1:STATe ON\n")
@@ -329,6 +333,7 @@ if __name__ == '__main__':
     sleep(1)
 
     ep_in.write("OUTPut1:STATe OFF\n")
+    ep_in.write("System:Local\n".encode("ascii"))
     # data = ep_out.read(1)
     # print(data)
 
