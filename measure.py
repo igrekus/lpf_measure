@@ -2,7 +2,6 @@ import random
 import sys
 from time import sleep
 
-import array
 import serial
 from os import listdir
 from os.path import isfile, join, isdir, exists
@@ -10,6 +9,7 @@ from PyQt5.QtWidgets import QApplication
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavToolbar
+from numpy import byte
 
 from mainwindow import MainWindow
 from arduino import Arduino
@@ -296,7 +296,7 @@ def main(args):
         # start_gui()
 
 if __name__ == '__main__':
-    main(sys.argv)
+    # main(sys.argv)
     # input("\nНажмите Enter для завершения работы."))
 
     # import visa
@@ -307,54 +307,47 @@ if __name__ == '__main__':
 
 
     import usb
-    dev_list = list(usb.core.find(find_all=True))
-    dev = dev_list[0]
 
-    cfgs = list(dev)
-    cfg = cfgs[0]
-    cfg.set()
+    id_vendor = 0x4348
+    id_product = 0x5537
+    id_config = 1
+    id_intf = 0
+    id_setting = 0
 
-    intfs = list(cfg)
-    intf = intfs[0]
+    device = usb.core.find(idVendor=id_vendor, idProduct=id_product)
 
-    eps = list(intf)
-    print(eps)
-    ep_out = eps[0]
-    ep_in = eps[1]
+    device.set_configuration()
+    config = device.get_active_configuration()
+    interface = config[(id_intf, id_setting)]
 
-    # dev.write(ep_in.bEndpointAddress, "*IDN?", intf.bInterfaceNumber)
-    # ep_in.write("System:External\n".encode("ascii"))
-    # ep_in.write("SOURce1:Function SQUare\n".encode("ascii"))
-    ep_in.write("SOURce1:Function SINusoid\n".encode("ascii"))
-    # ep_in.write("SOURce1:Function SINusoid\n\n\n".encode("ascii"))
-    # ep_in.write("SOURce1:Function SINusoid\n\n\n\n".encode("ascii"))
-    ep_in.write("OUTPut1:STATe ON\n")
+    ep_command = usb.util.find_descriptor(interface,
+                                          custom_match=lambda e: usb.util.endpoint_direction(
+                                              e.bEndpointAddress) == usb.util.ENDPOINT_OUT)
 
-    sleep(1)
+    print("eps:", list(interface))
 
-    ep_in.write("OUTPut1:STATe OFF\n")
-    ep_in.write("System:Local\n".encode("ascii"))
-    # data = ep_out.read(1)
-    # print(data)
+    # # [SOURce[1|2]:]APPLy:<function> [<freq>[,<amp>[,<offset>]]]
+    # ep_command.write("SOURce1:APPLy:SIN 10kHz\n".encode("ascii"))
+    # # [SOURce[1|2]:]PHASe <value>[deg]
+    # ep_command.write("SOURce1:PHASe 33deg\n".encode("ascii"))
+    # # [OUTPut[1|2]:]LOAD <value>[Ohm]
+    # ep_command.write("OUTPut1:LOAD 50Ohm\n".encode("ascii"))
+    # # [SOURce[1|2]:]FREQuency <value>[unit]
+    # ep_command.write("SOURce1:FREQuency 50kHz\n".encode("ascii"))
 
-    # ep_in.write()
-    # dev.write(ep_in.bEndpointAddress, "#IDN?", intf.bInterfaceNumber)
+    ep_command.write("SOURce1:APPLy:SIN 10kHz\n".encode("ascii"))
 
-    # dev = dev_list[0]
-    # cfg = dev[0].set()
-    # for intf in cfg:
-    #     print(intf)
-    # for dev in dev_list:
-    #     for cfg in dev:
-    #         print(cfg)
 
-    # ports = ['COM%s' % (i + 1) for i in range(256)]
-    # result = []
-    # for port in ports:
-    #     try:
-    #         s = serial.Serial(port)
-    #         s.close()
-    #         result.append(port)
-    #     except (OSError, serial.SerialException):
-    #         pass
-    # print(result)
+    # try:
+    #     ep_command.write("SOURce1:APPLy?\n".encode("ascii"))
+    # except usb.core.USBError as ex:
+    #     print(ex)
+    # finally:
+    #     ep_command.write("*CLS".encode("ascii"))
+
+    # print(ep_command.write("SOURce1:APPLy?\n".encode("ascii")))
+    # ep_command.write("OUTPut1:STATe ON\n".encode("ascii"))
+    # sleep(1)
+    # ep_command.write("OUTPut1:STATe OFF\n".encode("ascii"))
+
+    # ep_command.write("System:Local\n".encode("ascii"))

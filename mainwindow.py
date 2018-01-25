@@ -7,7 +7,6 @@ from PyQt5.QtCore import Qt
 from export_xlsx import export_to_excel
 
 
-# TODO record commentaries from other users
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
