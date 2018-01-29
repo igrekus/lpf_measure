@@ -299,32 +299,12 @@ if __name__ == '__main__':
     # main(sys.argv)
     # input("\nНажмите Enter для завершения работы."))
 
-    # import visa
-    # rm = visa.ResourceManager()
-    # print(rm.list_resources())
-    # dev = rm.open_resource("USB::0x4348::0x5537::SN0::0:RAW")
-    # print(dev)
+    import visa
 
+    rm = visa.ResourceManager()
+    print(rm.list_resources())
 
-    import usb
-
-    id_vendor = 0x4348
-    id_product = 0x5537
-    id_config = 1
-    id_intf = 0
-    id_setting = 0
-
-    device = usb.core.find(idVendor=id_vendor, idProduct=id_product)
-
-    device.set_configuration()
-    config = device.get_active_configuration()
-    interface = config[(id_intf, id_setting)]
-
-    ep_command = usb.util.find_descriptor(interface,
-                                          custom_match=lambda e: usb.util.endpoint_direction(
-                                              e.bEndpointAddress) == usb.util.ENDPOINT_OUT)
-
-    print("eps:", list(interface))
+    inst = rm.open_resource("USB0::0x4348::0x5537::NI-VISA-10001::RAW")
 
     # # [SOURce[1|2]:]APPLy:<function> [<freq>[,<amp>[,<offset>]]]
     # ep_command.write("SOURce1:APPLy:SIN 10kHz\n".encode("ascii"))
@@ -335,19 +315,13 @@ if __name__ == '__main__':
     # # [SOURce[1|2]:]FREQuency <value>[unit]
     # ep_command.write("SOURce1:FREQuency 50kHz\n".encode("ascii"))
 
-    ep_command.write("SOURce1:APPLy:SIN 10kHz\n".encode("ascii"))
+    print(inst.write("*CLS\n"))
+    # inst.write("*RST\n")
 
+    print(inst.write("SOURce1:APPLy:SIN 10kHz\n"))
+    print(inst.write("OUTPut1:LOAD 50Ohm\n"))
+    print(inst.write('SOURce1:VOLTage 3dBm'))
 
-    # try:
-    #     ep_command.write("SOURce1:APPLy?\n".encode("ascii"))
-    # except usb.core.USBError as ex:
-    #     print(ex)
-    # finally:
-    #     ep_command.write("*CLS".encode("ascii"))
+    print(inst.write("*CLS\n"))
+    print(inst.write("SYSTem:LOCal\n"))
 
-    # print(ep_command.write("SOURce1:APPLy?\n".encode("ascii")))
-    # ep_command.write("OUTPut1:STATe ON\n".encode("ascii"))
-    # sleep(1)
-    # ep_command.write("OUTPut1:STATe OFF\n".encode("ascii"))
-
-    # ep_command.write("System:Local\n".encode("ascii"))
