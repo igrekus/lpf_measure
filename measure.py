@@ -40,19 +40,6 @@ import matplotlib
 #                                                 Стимул > Мощность > Фикс. частота
 
 # sample program:
-# //
-# // Trigger measurement and wait for completion
-# //
-# viPrintf(instr, ":TRIG:SOUR BUS\n");
-# viPrintf(instr, ":TRIG:SING\n");
-# viQueryf(instr, "*OPC?\n", "%d", &temp);
-# //
-# // Read out measurement data
-# //
-# retCount = maxCnt * 2;
-# viQueryf(instr, "CALC:DATA:FDAT?\n", "%,#lf", &retCount, Data);
-# retCount = maxCnt;
-# viQueryf(instr, "SENS:FREQ:DATA?\n", "%,#lf", &retCount, Freq);
 
 # !!!
 # TODO: dupe files on a flash drive (MMEMory:MDIRectory <string> success = drive present?)
@@ -129,6 +116,7 @@ def measure():
         osc = Obzor304(OSC_ADDR)
     except Exception as ex:
         log("Ошибка: нет подключения к анализатору: " + str(ex))
+        log("Проверьте найстройки анализатора: ")
         return
     log("Анализатор: " + str(osc))
 
@@ -327,8 +315,37 @@ def main(args):
         usage()
 
 if __name__ == '__main__':
-    main(sys.argv)
-    input("\nНажмите Enter для завершения работы.")
+    import visa
+    rm = visa.ResourceManager()
+    inst = rm.open_resource(OSC_ADDR)
+    print(inst.query("*IDN?\n"))
+
+    inst.write(":TRIG:SOUR external\n")
+    inst.write(":TRIG:SING\n")
+    # inst.write("init1\n")
+    while not inst.query("*OPC?\n"):
+        print("waiting")
+
+    print("done measure")
+
+    inst.write(":TRIG:SOUR internal")
+    inst.write("SYSTEM:LOCAL\n")
+    # //
+    # // Trigger measurement and wait for completion
+    # //
+    # viPrintf(instr, ":TRIG:SOUR BUS\n");
+    # viPrintf(instr, ":TRIG:SING\n");
+    # viQueryf(instr, "*OPC?\n", "%d", &temp);
+    # //
+    # // Read out measurement data
+    # //
+    # retCount = maxCnt * 2;
+    # viQueryf(instr, "CALC:DATA:FDAT?\n", "%,#lf", &retCount, Data);
+    # retCount = maxCnt;
+    # viQueryf(instr, "SENS:FREQ:DATA?\n", "%,#lf", &retCount, Freq);
+
+    # main(sys.argv)
+    # input("\nНажмите Enter для завершения работы.")
 
     # import visa
     #
