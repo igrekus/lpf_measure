@@ -1,6 +1,4 @@
-import random
 import sys
-from time import sleep
 
 import serial
 from os import listdir
@@ -9,21 +7,55 @@ from PyQt5.QtWidgets import QApplication
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavToolbar
-from numpy import byte
 
 from mainwindow import MainWindow
 from arduino import Arduino
 from obzor304 import Obzor304
 import matplotlib
 
-# TODO: get end measure confirmation from analyzer
+# TODO: begin with *CLS
+# TODO: begin measure with SYSTem:REMote
+# TODO: set trigger: TRIGger[:SEQuence]:SOURce {INTernal|EXTernal|MANual|BUS}
+
+# TODO: auto-load instrument state: MMEMory:LOAD[:STATe] "<string>" (.sta)
+# TODO: auto-load calibration data: MMEMory:LOAD:CKIT<Ck> "<string>" (.ckd)
+
+# TODO: trigger measurement with *TRG, source is set with TRIG:SOUR)
+# TODO: get end measure confirmation from analyzer (while OPC? )
+
+# TODO: wait for cmd end on analyzer: *WAI
+#                               beep: SYSTem:BEEPer:COMPlete:IMMediate  -- test beep
+#                          test beep: SYSTem:BEEPer:COMPlete:STATe {ON|OFF|1|0}
+# TODO: read measures directly to the PC: SENSe<Ch>:FREQuency:DATA? (?)
+# TODO: finish task with SYSTem:LOCal
+
 # TODO: save png
 # TODO: make config file (instr addresses)
 # TODO: GUI stat analysis
 # TODO: save settings and calibration from analyzer
-# TODO: dupe files on a flash drive
 # TODO: track measurement number, write successive measurements to a numbered forlder
-# TODO: stimulate on one freq, measure x2 freq
+
+# TODO: stimulate on one freq, measure x2 freq -> SENSe<Ch>:FREQuency[:CW] <frequency>
+#                                                 SENSe<Ch>:FREQuency[:FIXed] <frequency>
+#                                                 Стимул > Мощность > Фикс. частота
+
+# sample program:
+# //
+# // Trigger measurement and wait for completion
+# //
+# viPrintf(instr, ":TRIG:SOUR BUS\n");
+# viPrintf(instr, ":TRIG:SING\n");
+# viQueryf(instr, "*OPC?\n", "%d", &temp);
+# //
+# // Read out measurement data
+# //
+# retCount = maxCnt * 2;
+# viQueryf(instr, "CALC:DATA:FDAT?\n", "%,#lf", &retCount, Data);
+# retCount = maxCnt;
+# viQueryf(instr, "SENS:FREQ:DATA?\n", "%,#lf", &retCount, Freq);
+
+# !!!
+# TODO: dupe files on a flash drive (MMEMory:MDIRectory <string> success = drive present?)
 
 COMMAND = "LPF,"
 OSC_ADDR = "TCPIP::192.168.0.3::INSTR"
@@ -293,35 +325,34 @@ def main(args):
             measure()
     else:
         usage()
-        # start_gui()
 
 if __name__ == '__main__':
-    # main(sys.argv)
-    # input("\nНажмите Enter для завершения работы."))
+    main(sys.argv)
+    input("\nНажмите Enter для завершения работы.")
 
-    import visa
-
-    rm = visa.ResourceManager()
-    print(rm.list_resources())
-
-    inst = rm.open_resource("USB0::0x4348::0x5537::NI-VISA-10001::RAW")
-
-    # # [SOURce[1|2]:]APPLy:<function> [<freq>[,<amp>[,<offset>]]]
-    # ep_command.write("SOURce1:APPLy:SIN 10kHz\n".encode("ascii"))
-    # # [SOURce[1|2]:]PHASe <value>[deg]
-    # ep_command.write("SOURce1:PHASe 33deg\n".encode("ascii"))
-    # # [OUTPut[1|2]:]LOAD <value>[Ohm]
-    # ep_command.write("OUTPut1:LOAD 50Ohm\n".encode("ascii"))
-    # # [SOURce[1|2]:]FREQuency <value>[unit]
-    # ep_command.write("SOURce1:FREQuency 50kHz\n".encode("ascii"))
-
-    print(inst.write("*CLS\n"))
-    # inst.write("*RST\n")
-
-    print(inst.write("SOURce1:APPLy:SIN 10kHz\n"))
-    print(inst.write("OUTPut1:LOAD 50Ohm\n"))
-    print(inst.write('SOURce1:VOLTage 3dBm'))
-
-    print(inst.write("*CLS\n"))
-    print(inst.write("SYSTem:LOCal\n"))
+    # import visa
+    #
+    # rm = visa.ResourceManager()
+    # print(rm.list_resources())
+    #
+    # inst = rm.open_resource("USB0::0x4348::0x5537::NI-VISA-10001::RAW")
+    #
+    # # # [SOURce[1|2]:]APPLy:<function> [<freq>[,<amp>[,<offset>]]]
+    # # ep_command.write("SOURce1:APPLy:SIN 10kHz\n".encode("ascii"))
+    # # # [SOURce[1|2]:]PHASe <value>[deg]
+    # # ep_command.write("SOURce1:PHASe 33deg\n".encode("ascii"))
+    # # # [OUTPut[1|2]:]LOAD <value>[Ohm]
+    # # ep_command.write("OUTPut1:LOAD 50Ohm\n".encode("ascii"))
+    # # # [SOURce[1|2]:]FREQuency <value>[unit]
+    # # ep_command.write("SOURce1:FREQuency 50kHz\n".encode("ascii"))
+    #
+    # print(inst.write("*CLS\n"))
+    # # inst.write("*RST\n")
+    #
+    # print(inst.write("SOURce1:APPLy:SIN 10kHz\n"))
+    # print(inst.write("OUTPut1:LOAD 50Ohm\n"))
+    # print(inst.write('SOURce1:VOLTage 3dBm'))
+    #
+    # print(inst.write("*CLS\n"))
+    # print(inst.write("SYSTem:LOCal\n"))
 

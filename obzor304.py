@@ -7,6 +7,7 @@ TOUCHSTONE_S2P = "S2P"
 
 class Obzor304:
     def __init__(self, address: str):
+        # TODO: move resource manager out of this class
         self._rm = visa.ResourceManager()
         self._inst = self._rm.open_resource(address)
         self._idn = self._inst.query("*IDN?")
@@ -21,6 +22,8 @@ class Obzor304:
         self.set_touchstone_file_type(TOUCHSTONE_S2P)
 
     def set_touchstone_file_type(self, ftype: str):
+        # print("OBZOR-304: устанавливаем тип выходного файла", self._inst.write("MMEM:STOR:SNP:TYPE:" + ftype + " 1,2"),
+        #       "| file_type=" + ftype)
         print("OBZOR-304: устанавливаем тип выходного файла", self._inst.write("MMEM:STOR:SNP:TYPE:" + ftype),
               "| file_type=" + ftype)
 
