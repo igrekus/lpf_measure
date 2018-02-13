@@ -352,24 +352,32 @@ if __name__ == '__main__':
     # rm = visa.ResourceManager()
     # print(rm.list_resources())
     #
-    # inst = rm.open_resource("USB0::0x4348::0x5537::NI-VISA-10001::RAW")
+    # inst = rm.open_resource("USB0::0x4348::0x5537::NI-VISA-10002::RAW")
     #
-    # # # [SOURce[1|2]:]APPLy:<function> [<freq>[,<amp>[,<offset>]]]
-    # # ep_command.write("SOURce1:APPLy:SIN 10kHz\n".encode("ascii"))
-    # # # [SOURce[1|2]:]PHASe <value>[deg]
-    # # ep_command.write("SOURce1:PHASe 33deg\n".encode("ascii"))
-    # # # [OUTPut[1|2]:]LOAD <value>[Ohm]
-    # # ep_command.write("OUTPut1:LOAD 50Ohm\n".encode("ascii"))
-    # # # [SOURce[1|2]:]FREQuency <value>[unit]
-    # # ep_command.write("SOURce1:FREQuency 50kHz\n".encode("ascii"))
+    # # # # [SOURce[1|2]:]APPLy:<function> [<freq>[,<amp>[,<offset>]]]
+    # # # ep_command.write("SOURce1:APPLy:SIN 10kHz\n".encode("ascii"))
+    # # # # [SOURce[1|2]:]PHASe <value>[deg]
+    # # # ep_command.write("SOURce1:PHASe 33deg\n".encode("ascii"))
+    # # # # [OUTPut[1|2]:]LOAD <value>[Ohm]
+    # # # ep_command.write("OUTPut1:LOAD 50Ohm\n".encode("ascii"))
+    # # # # [SOURce[1|2]:]FREQuency <value>[unit]
+    # # # ep_command.write("SOURce1:FREQuency 50kHz\n".encode("ascii"))
+    # #
+    # print("cls", inst.write("*CLS\n"))
     #
-    # print(inst.write("*CLS\n"))
-    # # inst.write("*RST\n")
+    # print("load", inst.write("OUTPut1:LOAD 50Ohm\n"))
+    # print("load", inst.write("OUTPut2:LOAD 50Ohm\n"))
+    # #
+    # # print("sin", inst.write("SOURce1:APPLy:SINusoid 10kHz\n"))
+    # # print("sin", inst.write("SOURce2:APPLy:SINusoid 10kHz\n"))
+    # # print("volt", inst.write('SOURce1:VOLTage 10mV'))
+    # # print("volt", inst.write('SOURce2:VOLTage 10mV'))
+    # #
+    # # print("offs", inst.write("SOURce1:VOLTage:OFFSet 0V\n"))
+    # # print("offs", inst.write("SOURce2:VOLTage:OFFSet 0V\n"))
     #
-    # print(inst.write("SOURce1:APPLy:SIN 10kHz\n"))
-    # print(inst.write("OUTPut1:LOAD 50Ohm\n"))
-    # print(inst.write('SOURce1:VOLTage 3dBm'))
+    # # print("volt", inst.write('SOURce1:VOLTage 3dBm'))
+    # # print("volt", inst.write('SOURce2:VOLTage 3dBm'))
     #
-    # print(inst.write("*CLS\n"))
-    # print(inst.write("SYSTem:LOCal\n"))
-
+    # print("cls", inst.write("*CLS\n"))
+    # print("local", inst.write("SYSTem:LOCal\n"))
