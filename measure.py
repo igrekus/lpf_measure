@@ -178,6 +178,7 @@ def process_stats(work_dir: str, cutoff_mag=-6):
         return l
 
     MHz = float(1000000)
+    GHz = float(1000000000)
 
     if not exists(work_dir) or not isdir(work_dir):
         print("Ощибка: директория", work_dir, "не найдена.")
@@ -275,7 +276,7 @@ def usage():
     print("\nИспользование: lpt_measure.exe <command>\n\n"
           "    Команды:\n\n"
           "    /measure                     - начать процесс измерений (при наличии подключения к контроллеру Arduino и спектроанализатору OBZOR 304\n"
-          "    /stats <dir>                 - провести статобработку .s2p файлов в <dir>"
+          "    /stats <dir>                 - провести статобработку .s2p файлов в <dir>\n"
           "    /stats <dir> /cutoff <mag>   - провести статобработку .s2p файлов в <dir> используя <mag> в качестве уровня для поиска частоты среза")
 
 def start_gui(canvas11, canvas12, canvas22, cutoff_freq_x, cutoff_freq_y, cutoff_freq_delta_x, cutoff_freq_delta_y):
