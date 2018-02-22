@@ -23,7 +23,7 @@ import matplotlib
 # TODO: trigger measurement with *TRG, source is set with TRIG:SOUR)
 # TODO: get end measure confirmation from analyzer (while OPC? )
 
-# TODO: wait for cmd end on analyzer: *WAI
+# TODO: wait for cmd end on analyzer: *WAI (or "INIT: *OPC?")
 #                               beep: SYSTem:BEEPer:COMPlete:IMMediate  -- test beep
 #                          test beep: SYSTem:BEEPer:COMPlete:STATe {ON|OFF|1|0}
 # TODO: read measures directly to the PC: SENSe<Ch>:FREQuency:DATA? (?)
@@ -69,7 +69,6 @@ def find_available_ports():
             A list of the serial ports available on the system
     """
     ports = ['COM%s' % (i + 1) for i in range(256)]
-    # ports = ['COM%s' % (i + 1) for i in range(10)]
     result = []
     for port in ports:
         try:
@@ -93,6 +92,7 @@ def find_arduino(ports: list):
 
     return ""
     # return "COM5"
+
 
 def measure():
     log("Сканируем доступные порты.")
@@ -134,7 +134,8 @@ def measure():
 
     arduino.disconnect()
 
-def process_stats(work_dir: str):
+
+def process_stats(work_dir: str, cutoff_mag=-6):
 
     def get_file_list(data_path):
         return [l for l in listdir(data_path) if isfile(join(data_path, l)) and ".s2p" in l]
@@ -163,10 +164,10 @@ def process_stats(work_dir: str):
         # print("amp4", amp[4])
         return freq, amp
 
-    def calc_cutoff_freq():
+    def calc_cutoff_freq(cutoff_magnitude):
         l = list()
         for a, f in zip(amp, freq):
-            l.append(f[a.index(min(a, key=lambda x: abs(-6 - x)))])
+            l.append(f[a.index(min(a, key=lambda x: abs(cutoff_magnitude - x)))])
         return l
 
     def calc_cutoff_freq_delta():
@@ -199,7 +200,7 @@ def process_stats(work_dir: str):
     print("Ищем частоту среза.")
     global cutoff_freq_x
     global cutoff_freq_y
-    cutoff_freq_y = calc_cutoff_freq()
+    cutoff_freq_y = calc_cutoff_freq(cutoff_mag)
     cutoff_freq_x = range(len(cutoff_freq_y))
 
     global cutoff_freq_delta_x
@@ -216,8 +217,8 @@ def process_stats(work_dir: str):
         plt.plot(f, a, color="0.4")
 
     plt.subplots_adjust(bottom=0.150)
-    plt.axhline(-6, 0, 1, linewidth=0.8, color="0.3", linestyle="--")
-    plt.yticks(list(plt.yticks()[0]) + [-6])
+    plt.axhline(cutoff_mag, 0, 1, linewidth=0.8, color="0.3", linestyle="--")
+    plt.yticks(list(plt.yticks()[0]) + [cutoff_mag])
     plt.title("Коэффициент преобразования")
     plt.xscale("log")
     plt.xlabel("F, МГц")
@@ -229,7 +230,7 @@ def process_stats(work_dir: str):
     plt.figure(2)
     plt.subplots_adjust(bottom=0.150)
     plt.plot(cutoff_freq_x, cutoff_freq_y, color="0.4")
-    plt.title("Частота среза")
+    plt.title("Частота среза по уровню " + str(cutoff_mag) + " дБ")
     plt.xlabel("Код")
     plt.ylabel("F, МГц")
     plt.yscale("log")
@@ -273,9 +274,9 @@ def process_stats(work_dir: str):
 def usage():
     print("\nИспользование: lpt_measure.exe <command>\n\n"
           "    Команды:\n\n"
-          "    /measure          - начать процесс измерений (при наличии подключения к контроллеру Arduino и "
-          "спектроанализатору OBZOR 304\n"
-          "    /stats <dir>      - провести статобработку .s2p файлов в <dir>")
+          "    /measure                     - начать процесс измерений (при наличии подключения к контроллеру Arduino и спектроанализатору OBZOR 304\n"
+          "    /stats <dir>                 - провести статобработку .s2p файлов в <dir>"
+          "    /stats <dir> /cutoff <mag>   - провести статобработку .s2p файлов в <dir> используя <mag> в качестве уровня для поиска частоты среза")
 
 def start_gui(canvas11, canvas12, canvas22, cutoff_freq_x, cutoff_freq_y, cutoff_freq_delta_x, cutoff_freq_delta_y):
     app = QApplication(sys.argv)
@@ -300,8 +301,15 @@ def start_gui(canvas11, canvas12, canvas22, cutoff_freq_x, cutoff_freq_y, cutoff
 def main(args):
     if len(args) > 1:
         if args[1] == "/stats":
-            if len(args) > 2:
-                process_stats(args[2])
+            if len(args) == 3:
+                process_stats(args[2], -6)
+                start_gui(canvas11=canvas11, canvas12=canvas12, canvas22=canvas22,
+                          cutoff_freq_x=cutoff_freq_x,
+                          cutoff_freq_y=cutoff_freq_y,
+                          cutoff_freq_delta_x=cutoff_freq_delta_x,
+                          cutoff_freq_delta_y=cutoff_freq_delta_y)
+            elif len(args) == 5 and args[3] == "/cutoff":
+                process_stats(args[2], int(args[4]))
                 start_gui(canvas11=canvas11, canvas12=canvas12, canvas22=canvas22,
                           cutoff_freq_x=cutoff_freq_x,
                           cutoff_freq_y=cutoff_freq_y,
@@ -315,21 +323,25 @@ def main(args):
         usage()
 
 if __name__ == '__main__':
-    import visa
-    rm = visa.ResourceManager()
-    inst = rm.open_resource(OSC_ADDR)
-    print(inst.query("*IDN?\n"))
+    main(sys.argv)
+    # import visa
+    # rm = visa.ResourceManager()
+    # inst = rm.open_resource(OSC_ADDR)
+    # print(inst.query("*IDN?\n"))
+    #
+    # inst.write(":TRIG:SOUR external\n")
+    # inst.write(":TRIG:SING\n")
+    # # inst.write("init1\n")
+    # while not inst.query("*OPC?\n"):
+    #     print("waiting")
+    #
+    # print("done measure")
+    #
+    # inst.write(":TRIG:SOUR internal")
+    # inst.write("SYSTEM:LOCAL\n")
 
-    inst.write(":TRIG:SOUR external\n")
-    inst.write(":TRIG:SING\n")
-    # inst.write("init1\n")
-    while not inst.query("*OPC?\n"):
-        print("waiting")
 
-    print("done measure")
 
-    inst.write(":TRIG:SOUR internal")
-    inst.write("SYSTEM:LOCAL\n")
     # //
     # // Trigger measurement and wait for completion
     # //
@@ -337,6 +349,7 @@ if __name__ == '__main__':
     # viPrintf(instr, ":TRIG:SING\n");
     # viQueryf(instr, "*OPC?\n", "%d", &temp);
     # //
+
     # // Read out measurement data
     # //
     # retCount = maxCnt * 2;
