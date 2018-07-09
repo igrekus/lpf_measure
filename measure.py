@@ -1,6 +1,8 @@
 import sys
 
 import serial
+import matplotlib
+
 from os import listdir
 from os.path import isfile, join, isdir, exists
 from PyQt5.QtWidgets import QApplication
@@ -11,8 +13,8 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavToolba
 from arduinomock import ArduinoMock
 from mainwindow import MainWindow
 from arduino import Arduino
+from mainwindowmeasure import MainWindowMeasure
 from obzor304 import Obzor304
-import matplotlib
 
 # TODO: begin with *CLS
 # TODO: begin measure with SYSTem:REMote
@@ -155,7 +157,6 @@ def measure():
 
     osc.finish()
     arduino.disconnect()
-
 
 def process_stats(work_dir: str, cutoff_mag=-6):
 
@@ -320,6 +321,14 @@ def start_gui(canvas11, canvas12, canvas22, cutoff_freq_x, cutoff_freq_y, cutoff
 
     sys.exit(app.exec_())
 
+def start_gui_measure():
+    app = QApplication(sys.argv)
+
+    window = MainWindowMeasure()
+    window.show()
+
+    sys.exit(app.exec_())
+
 def main(args):
     if len(args) > 1:
         if args[1] == "/stats":
@@ -343,77 +352,12 @@ def main(args):
             measure()
     else:
         usage()
+        start_gui_measure()
 
 if __name__ == '__main__':
+    # import subprocess
+    #
+    # subprocess.call([sys.executable, "-m", "pip", "install", "-U", "setuptools"])
+
     main(sys.argv)
 
-    # import visa
-    # rm = visa.ResourceManager()
-    # inst = rm.open_resource(OSC_ADDR)
-    # print(inst.query("*IDN?\n"))
-    #
-    # inst.write(":TRIG:SOUR external\n")
-    # inst.write(":TRIG:SING\n")
-    # # inst.write("init1\n")
-    # while not inst.query("*OPC?\n"):
-    #     print("waiting")
-    #
-    # print("done measure")
-    #
-    # inst.write(":TRIG:SOUR internal")
-    # inst.write("SYSTEM:LOCAL\n")
-
-
-
-    # //
-    # // Trigger measurement and wait for completion
-    # //
-    # viPrintf(instr, ":TRIG:SOUR BUS\n");
-    # viPrintf(instr, ":TRIG:SING\n");
-    # viQueryf(instr, "*OPC?\n", "%d", &temp);
-    # //
-
-    # // Read out measurement data
-    # //
-    # retCount = maxCnt * 2;
-    # viQueryf(instr, "CALC:DATA:FDAT?\n", "%,#lf", &retCount, Data);
-    # retCount = maxCnt;
-    # viQueryf(instr, "SENS:FREQ:DATA?\n", "%,#lf", &retCount, Freq);
-
-    # main(sys.argv)
-    # input("\nНажмите Enter для завершения работы.")
-
-    # import visa
-    #
-    # rm = visa.ResourceManager()
-    # print(rm.list_resources())
-    #
-    # inst = rm.open_resource("USB0::0x4348::0x5537::NI-VISA-10002::RAW")
-    #
-    # # # # [SOURce[1|2]:]APPLy:<function> [<freq>[,<amp>[,<offset>]]]
-    # # # ep_command.write("SOURce1:APPLy:SIN 10kHz\n".encode("ascii"))
-    # # # # [SOURce[1|2]:]PHASe <value>[deg]
-    # # # ep_command.write("SOURce1:PHASe 33deg\n".encode("ascii"))
-    # # # # [OUTPut[1|2]:]LOAD <value>[Ohm]
-    # # # ep_command.write("OUTPut1:LOAD 50Ohm\n".encode("ascii"))
-    # # # # [SOURce[1|2]:]FREQuency <value>[unit]
-    # # # ep_command.write("SOURce1:FREQuency 50kHz\n".encode("ascii"))
-    # #
-    # print("cls", inst.write("*CLS\n"))
-    #
-    # print("load", inst.write("OUTPut1:LOAD 50Ohm\n"))
-    # print("load", inst.write("OUTPut2:LOAD 50Ohm\n"))
-    # #
-    # # print("sin", inst.write("SOURce1:APPLy:SINusoid 10kHz\n"))
-    # # print("sin", inst.write("SOURce2:APPLy:SINusoid 10kHz\n"))
-    # # print("volt", inst.write('SOURce1:VOLTage 10mV'))
-    # # print("volt", inst.write('SOURce2:VOLTage 10mV'))
-    # #
-    # # print("offs", inst.write("SOURce1:VOLTage:OFFSet 0V\n"))
-    # # print("offs", inst.write("SOURce2:VOLTage:OFFSet 0V\n"))
-    #
-    # # print("volt", inst.write('SOURce1:VOLTage 3dBm'))
-    # # print("volt", inst.write('SOURce2:VOLTage 3dBm'))
-    #
-    # print("cls", inst.write("*CLS\n"))
-    # print("local", inst.write("SYSTem:LOCal\n"))
