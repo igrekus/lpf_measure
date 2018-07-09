@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavToolbar
 
+from arduinomock import ArduinoMock
 from mainwindow import MainWindow
 from arduino import Arduino
 from obzor304 import Obzor304
@@ -43,6 +44,9 @@ import matplotlib
 
 # !!!
 # TODO: dupe files on a flash drive (MMEMory:MDIRectory <string> success = drive present?)
+
+# MOCK:
+def_mock = True
 
 COMMAND = "LPF,"
 OSC_ADDR = "TCPIP::192.168.0.3::INSTR"
@@ -90,9 +94,11 @@ def find_arduino(ports: list):
             if ans[:7] == "ARDUINO".encode("ascii"):
                 return port
 
-    return ""
-    # return "COM5"
-
+    # MOCK:
+    if def_mock:
+        return "COM5"
+    else:
+        return ""
 
 def measure():
     log("Сканируем доступные порты.")
@@ -107,8 +113,14 @@ def measure():
         return
 
     log("Подключаемся к Arduino: " + arduino_port)
-    arduino = Arduino(port=arduino_port, baudrate=115200, parity=serial.PARITY_NONE, bytesize=8,
-                      stopbits=serial.STOPBITS_ONE, timeout=1)
+
+    # MOCK:
+    if def_mock:
+        arduino = ArduinoMock(port=arduino_port, baudrate=115200, parity=serial.PARITY_NONE, bytesize=8,
+                              stopbits=serial.STOPBITS_ONE, timeout=1)
+    else:
+        arduino = Arduino(port=arduino_port, baudrate=115200, parity=serial.PARITY_NONE, bytesize=8,
+                          stopbits=serial.STOPBITS_ONE, timeout=1)
 
     log("Подключаемся к анализатору: " + OSC_ADDR)
 
@@ -123,15 +135,25 @@ def measure():
     osc.init_instrument()
 
     log("Начинаем измерения...")
-    for n in range(MAXREG + 1):
+
+    regs = MAXREG + 1
+
+    # MOCK:
+    if def_mock:
+        regs = 5
+
+    for n in range(regs):
         cmd = COMMAND + str(n)
         log("\nИзмерение: code=" + str(n).zfill(3) + ", bin=" + bin(n) + ", command: " + cmd)
         if not arduino.set_lpf_code(cmd):
             log("Ошибка при записи регистра: " + cmd)
             continue
+        freqs, amps = osc.measure(n)
 
-        osc.measure(n)
+        print("freqs: ", freqs)
+        print("amps:", amps)
 
+    osc.finish()
     arduino.disconnect()
 
 
@@ -178,7 +200,6 @@ def process_stats(work_dir: str, cutoff_mag=-6):
         return l
 
     MHz = float(1000000)
-    GHz = float(1000000000)
 
     if not exists(work_dir) or not isdir(work_dir):
         print("Ощибка: директория", work_dir, "не найдена.")
@@ -325,6 +346,7 @@ def main(args):
 
 if __name__ == '__main__':
     main(sys.argv)
+
     # import visa
     # rm = visa.ResourceManager()
     # inst = rm.open_resource(OSC_ADDR)
