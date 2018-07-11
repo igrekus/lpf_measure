@@ -15,25 +15,25 @@ class PlotWidget(QObject):
         self._cutoffMag = -6.0
         self._cutoffTickAdded = False
 
-        self.figure11 = None
-        self.canvas11 = None
-        self.toolbar11 = None
+        self.mainFigure = None
+        self.mainCanvas = None
+        self.mainToolbar = None
 
     def initPlots(self):
         plt.figure(num=1)
 
-        self.figure11 = plt.figure(1)
-        self.canvas11 = FigureCanvas(self.figure11)
-        self.toolbar11 = NavToolbar(canvas=self.canvas11, parent=None)
-        self.parent()._ui.layoutMainPlot.addWidget(self.canvas11)
-        self.parent()._ui.layoutMainPlot.addWidget(self.canvas11.toolbar)
+        self.mainFigure = plt.figure(1)
+        self.mainCanvas = FigureCanvas(self.mainFigure)
+        self.mainToolbar = NavToolbar(canvas=self.mainCanvas, parent=None)
+        self.parent()._ui.layoutMainPlot.addWidget(self.mainCanvas)
+        self.parent()._ui.layoutMainPlot.addWidget(self.mainCanvas.toolbar)
 
         self.resetPlots()
 
     def resetPlots(self):
         plt.figure(1)
         plt.subplots_adjust(bottom=0.150)
-        plt.axhline(self._cutoffMag, 0, 1, linewidth=0.8, color="0.3", linestyle="--")
+        # plt.axhline(self._cutoffMag, 0, 1, linewidth=0.8, color="0.3", linestyle="--")
         plt.title("Коэффициент преобразования")
         plt.xscale("log")
         plt.xlabel("F, Гц")
@@ -41,12 +41,12 @@ class PlotWidget(QObject):
         plt.ylim([-60, 10])
         plt.grid(b=True, which="minor", color="0.7", linestyle='--')
         plt.grid(b=True, which="major", color="0.5", linestyle='-')
-        # plt.autoscale(False)
 
     def clearFigures(self):
-        plt.figure(1).axes.clear()
-        plt.figure(1).lines.clear()
-        # self.resetPlots()
+        # plt.figure(1).axes.clear()
+        # plt.figure(1).lines.clear()
+        plt.figure(1).clear()
+        self.resetPlots()
 
     def parseMeasurementStr(self, string):
         return [float(num) for num in string.split(',')]
@@ -67,15 +67,15 @@ class PlotWidget(QObject):
         amps = self.parseMeasurementStr(self._domainModel._lastMeasurement[1])
 
         if not self._cutoffTickAdded:
-            plt.yticks(list(plt.yticks())[0] + [self._cutoffMag])
+            # plt.yticks(list(plt.yticks())[0] + [self._cutoffMag])
+            plt.yticks(list(range(-60, 10, 10)) + [self._cutoffMag])
             self._cutoffTickAdded = True
 
         plt.figure(1)
         plt.plot(freqs, amps, color="0.4")
-        plt.ylim([-60, 10])
-        plt.grid(b=True, which="minor", color="0.7", linestyle='--')
-        plt.grid(b=True, which="major", color="0.5", linestyle='-')
-        self.figure11.canvas.draw()
+
+
+        self.mainFigure.canvas.draw()
 
         # print(self._domainModel._lastMeasurement)
 

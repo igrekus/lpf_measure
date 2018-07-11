@@ -46,21 +46,22 @@ class DomainModel(QObject):
             return result
 
         def find_arduino(ports: list):
-            for port in ports:
-                s = serial.Serial(port=port, baudrate=115200, timeout=1)
-                if s.is_open:
-                    s.write(bytes([0x23, 0x4E, 0x41, 0x4D, 0x45]))
-                    while s.in_waiting == 0:
-                        pass
-                    ans = s.read_all()
-                    if ans[:7] == 'ARDUINO'.encode('ascii'):
-                        return port
-
-            # MOCK:
-            if def_mock:
-                return 'COM5'
+            # MOCK
+            if not def_mock:
+                for port in ports:
+                    s = serial.Serial(port=port, baudrate=115200, timeout=1)
+                    if s.is_open:
+                        s.write(bytes([0x23, 0x4E, 0x41, 0x4D, 0x45]))
+                        while s.in_waiting == 0:
+                            pass
+                        ans = s.read_all()
+                        if ans[:7] == 'ARDUINO'.encode('ascii'):
+                            return port
+                else:
+                    return ''
             else:
-                return ''
+                return 'COM5'
+
 
         print('Сканируем доступные порты.')
         available_ports = find_available_ports()
