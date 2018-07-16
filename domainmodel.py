@@ -15,6 +15,7 @@ class DomainModel(QObject):
     OSC_ADDR = 'TCPIP::192.168.0.3::INSTR'
     MAXREG = 127
 
+    dataPointMeasured = pyqtSignal()
     measurementFinished = pyqtSignal()
 
     def __init__(self, parent=None):
@@ -24,12 +25,6 @@ class DomainModel(QObject):
         self._analyzer = None
 
         self._lastMeasurement = None
-
-        # data, make separate stat_processor class
-        self.cutoff_freq_x = list()
-        self.cutoff_freq_y = list()
-        self.cutoff_freq_delta_x = list()
-        self.cutoff_freq_delta_y = list()
 
     def findInstruments(self):
 
@@ -117,10 +112,11 @@ class DomainModel(QObject):
                 continue
 
             self._lastMeasurement = self._analyzer.measure(n)
-            self.measurementFinished.emit()
+            self.dataPointMeasured.emit()
 
         self._analyzer.finish()
         self._arduino.disconnect()
+        self.measurementFinished.emit()
         print('Конец измерений.')
 
     @property

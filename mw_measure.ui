@@ -158,10 +158,10 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
-           <layout class="QVBoxLayout" name="vlChart12"/>
+           <layout class="QVBoxLayout" name="cutoffFreqLayut"/>
           </item>
           <item>
-           <layout class="QVBoxLayout" name="vlChart21"/>
+           <layout class="QVBoxLayout" name="cutoffDeltaLayout"/>
           </item>
          </layout>
         </item>

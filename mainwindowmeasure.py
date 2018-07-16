@@ -47,7 +47,8 @@ class MainWindowMeasure(QMainWindow):
 
     def setupSignals(self):
         # plot
-        self._domainModel.measurementFinished.connect(self._plotWidget.processMeasurement)
+        self._domainModel.dataPointMeasured.connect(self._plotWidget.processDataPoint)
+        self._domainModel.measurementFinished.connect(self._plotWidget.measurementFinished)
 
         # ui
         # buttons
@@ -120,3 +121,4 @@ class MainWindowMeasure(QMainWindow):
 
     def procActExportExcel(self):
         self._uiFacade.requestExportToExcel()
+
