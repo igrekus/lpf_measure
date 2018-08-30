@@ -58,13 +58,13 @@ class Obzor304:
         # while self._inst.query('*OPC?') != '1':
         #     print('waiting')
 
-        sleep(1.5)
+        sleep(0.7)
         freqs = self.query('SENS:FREQ:DATA?')
         amps = self.query('CALC1:DATA:FDAT?')
         # print('freqs:', freqs.count(',') + 1, freqs)
         # print('amp:', amps.count(',') + 1, amps)
         print('OBZOR-304: сохраняем результат измерений: ',
-              self.send(f'MMEM:STOR:SNP "{meas_file_name}"'), f'\nФайл:{meas_file_name}')
+              self.send(f'MMEM:STOR:SNP "{meas_file_name}"'), f'\nФайл: {meas_file_name}')
         return freqs, amps
 
     def finish(self):

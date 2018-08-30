@@ -1,9 +1,9 @@
+import sys
+
 from PyQt5.QtCore import QObject, pyqtSlot
-from PyQt5.QtChart import QChart, QChartView, QLineSeries
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavToolbar
-import numpy
 
 class PlotWidget(QObject):
 
@@ -68,7 +68,7 @@ class PlotWidget(QObject):
         plt.xscale("log")
         plt.xlabel("F, Гц")
         plt.ylabel("К-т пр., дБ")
-        plt.ylim([-60, 10])
+        plt.ylim([-60, 30])
         plt.grid(b=True, which="minor", color="0.7", linestyle='--')
         plt.grid(b=True, which="major", color="0.5", linestyle='-')
 
@@ -94,8 +94,11 @@ class PlotWidget(QObject):
         plt.figure(3).clear()
         self.resetPlots()
 
-    def parseMeasurementStr(self, string):
+    def parseFreqStr(self, string):
         return [float(num) for num in string.split(',')]
+
+    def parseAmpStr(self, string):
+        return [float(num) for idx, num in enumerate(string.split(',')) if idx % 2 == 0]
 
     @property
     def cutoffMag(self):
@@ -108,16 +111,16 @@ class PlotWidget(QObject):
 
     @pyqtSlot()
     def processDataPoint(self):
-        print('processing measurement')
-        freq = self.parseMeasurementStr(self._domainModel._lastMeasurement[0])
-        amp = self.parseMeasurementStr(self._domainModel._lastMeasurement[1])
+        print('Обработка измерения.')
+        freq = self.parseFreqStr(self._domainModel._lastMeasurement[0])
+        amp = self.parseAmpStr(self._domainModel._lastMeasurement[1])
 
         self.freqs.append(freq)
         self.amps.append(amp)
 
         if not self._cutoffTickAdded:
             # plt.yticks(list(plt.yticks())[0] + [self._cutoffMag])
-            plt.yticks(list(range(-60, 10, 10)) + [self._cutoffMag])
+            plt.yticks(list(range(-60, 30, 10)) + [self._cutoffMag])
             self._cutoffTickAdded = True
 
         plt.figure(1)
@@ -129,8 +132,11 @@ class PlotWidget(QObject):
 
     @pyqtSlot()
     def measurementFinished(self):
+        print('Статобработка.')
         for a, f in zip(self.amps, self.freqs):
             self.cutoff_freq_y.append(f[a.index(min(a, key=lambda x: abs(self._cutoffMag - x)))])
+
+        print(len(self.cutoff_freq_y), self.cutoff_freq_y)
 
         self.cutoff_freq_y = list(reversed(self.cutoff_freq_y))
         self.cutoff_freq_x = range(len(self.cutoff_freq_y))

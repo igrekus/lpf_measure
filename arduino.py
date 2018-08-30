@@ -1,3 +1,5 @@
+from time import sleep
+
 import serial
 # from time import sleep
 
@@ -23,11 +25,9 @@ class Arduino:
 
         self._port.write(msg)
 
-        # confirmation not working due to lack of support from Arduino
-        while self._port.in_waiting == 0:
-            pass
-        print('Arduino: response:', self._port.read_all())
-
+        sleep(2)
+        print('Arduino: response:', self._port.read_until('\n'))
+        # sleep(0.5)
         return True
 
     def is_open(self):

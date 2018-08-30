@@ -7,7 +7,8 @@ from obzor304 import Obzor304
 from obzor304mock import Obzor304Mock
 
 # MOCK
-def_mock = True
+def_mock = False
+
 
 class DomainModel(QObject):
 
@@ -105,6 +106,8 @@ class DomainModel(QObject):
             regs = 5
 
         for n in range(regs):
+        # for n in list(range(0, regs, 12)) + [127]:
+        # for n in range(5):
             cmd = self.COMMAND + str(n)
             print(f'\nИзмерение: code={str(n).zfill(3)}, bin={bin(n)}, command: {cmd}')
             if not self._arduino.set_lpf_code(cmd):
@@ -122,3 +125,4 @@ class DomainModel(QObject):
     @property
     def instrumentsReady(self):
         return bool(self._arduino) and bool(self._analyzer)
+
