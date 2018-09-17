@@ -24,7 +24,7 @@ class Obzor304Mock(Obzor304):
         amps = self.query('CALC1:DATA:FDAT?')
 
         freqs = '300,4000,50000,600000,7000000'
-        amps = '10,5,0,-10,-40'
+        amps = '10,0,5,0,0,0,-10,0,-40,0'
         print('freqs:', freqs.count(',') + 1, freqs)
         print('amp:', amps.count(',') + 1, amps)
 

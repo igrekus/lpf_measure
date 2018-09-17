@@ -358,6 +358,7 @@ if __name__ == '__main__':
     # import subprocess
     #
     # subprocess.call([sys.executable, "-m", "pip", "install", "-U", "setuptools"])
-
+    # TODO добавить функцию измерения n-гармоники для любого кода из набора по запросу
+    # TODO добавить экспорт в .png
     main(sys.argv)
 

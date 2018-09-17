@@ -7,7 +7,7 @@ from obzor304 import Obzor304
 from obzor304mock import Obzor304Mock
 
 # MOCK
-def_mock = False
+def_mock = True
 
 
 class DomainModel(QObject):
@@ -98,7 +98,6 @@ class DomainModel(QObject):
     def measure(self):
         print('Начинаем измерения...')
         self._analyzer.init_instrument()
-
         regs = self.MAXREG + 1
 
         # MOCK:
@@ -106,8 +105,8 @@ class DomainModel(QObject):
             regs = 5
 
         for n in range(regs):
-        # for n in list(range(0, regs, 12)) + [127]:
-        # for n in range(5):
+            # for n in list(range(0, regs, 12)) + [127]:
+            # for n in range(5):
             cmd = self.COMMAND + str(n)
             print(f'\nИзмерение: code={str(n).zfill(3)}, bin={bin(n)}, command: {cmd}')
             if not self._arduino.set_lpf_code(cmd):

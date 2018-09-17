@@ -109,7 +109,7 @@ class PlotWidget(QObject):
         self._cutoffMag = value
         self._cutoffTickAdded = False
 
-    @pyqtSlot()
+    @pyqtSlot(name='processDataPoint')
     def processDataPoint(self):
         print('Обработка измерения.')
         freq = self.parseFreqStr(self._domainModel._lastMeasurement[0])
@@ -130,16 +130,23 @@ class PlotWidget(QObject):
 
         # print(self._domainModel._lastMeasurement)
 
-    @pyqtSlot()
+    @pyqtSlot(name='measurementFinished')
     def measurementFinished(self):
         print('Статобработка.')
-        for a, f in zip(self.amps, self.freqs):
-            self.cutoff_freq_y.append(f[a.index(min(a, key=lambda x: abs(self._cutoffMag - x)))])
+        max_amp = max(map(max, self.amps))
 
-        print(len(self.cutoff_freq_y), self.cutoff_freq_y)
+        cutoff_mag = max_amp + self._cutoffMag
+
+        for a, f in zip(self.amps, self.freqs):
+            self.cutoff_freq_y.append(f[a.index(min(a, key=lambda x: abs(cutoff_mag - x)))])
 
         self.cutoff_freq_y = list(reversed(self.cutoff_freq_y))
         self.cutoff_freq_x = range(len(self.cutoff_freq_y))
+
+        fig = plt.figure(1)
+        plt.axhline(cutoff_mag, 0, 1, linewidth=0.8, color="0.3", linestyle="--")
+        plt.yticks(list(plt.yticks()[0]) + [cutoff_mag])
+        fig.canvas.draw()
 
         plt.figure(2)
         plt.plot(self.cutoff_freq_x, self.cutoff_freq_y, color="0.4")
@@ -153,5 +160,4 @@ class PlotWidget(QObject):
 
         plt.figure(3)
         plt.plot(self.cutoff_freq_delta_x, self.cutoff_freq_delta_y, color="0.4")
-
 
