@@ -1,4 +1,5 @@
-import sys
+import os
+import errno
 
 from PyQt5.QtCore import QObject, pyqtSlot
 from matplotlib import pyplot as plt
@@ -100,6 +101,22 @@ class PlotWidget(QObject):
     def parseAmpStr(self, string):
         return [float(num) for idx, num in enumerate(string.split(',')) if idx % 2 == 0]
 
+    def exportPics(self, fmt='png'):
+        if fmt.lower() == 'png':
+            img_path = ".\\image\\"
+            try:
+                os.makedirs(img_path)
+            except OSError as ex:
+                if ex.errno != errno.EEXIST:
+                    raise IOError('Error creating image dir.')
+
+            try:
+                plt.savefig(img_path + 'img.png', dpi=400)
+            except Exception as ex:
+                print(ex)
+        else:
+            raise ValueError('Unsupported format')
+
     @property
     def cutoffMag(self):
         return self._cutoffMag
@@ -148,8 +165,9 @@ class PlotWidget(QObject):
         plt.yticks(list(plt.yticks()[0]) + [cutoff_mag])
         fig.canvas.draw()
 
-        plt.figure(2)
+        fig = plt.figure(2)
         plt.plot(self.cutoff_freq_x, self.cutoff_freq_y, color="0.4")
+        fig.canvas.draw()
 
         # for i in range(len(self.cutoff_freq_y[:-2])):
         for i in range(len(self.cutoff_freq_y[:-1])):
@@ -158,6 +176,7 @@ class PlotWidget(QObject):
 
         self.cutoff_freq_delta_x = range(len(self.cutoff_freq_delta_y))
 
-        plt.figure(3)
+        fig = plt.figure(3)
         plt.plot(self.cutoff_freq_delta_x, self.cutoff_freq_delta_y, color="0.4")
+        fig.canvas.draw()
 

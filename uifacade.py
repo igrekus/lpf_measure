@@ -5,9 +5,10 @@ from export_xlsx import export_to_excel
 
 class UiFacade(QObject):
 
-    def __init__(self, parent=None, domainModel=None):
+    def __init__(self, parent=None, domainModel=None, plotWidget=None):
         super().__init__(parent)
         self._domainModel = domainModel
+        self._plotWidget = plotWidget
 
     def initFacade(self):
         print('init ui facade')
@@ -20,6 +21,7 @@ class UiFacade(QObject):
 
     def requestExportToPng(self):
         print('request export to .png')
+        self._plotWidget.exportPics('png')
 
     def requestExportToExcel(self):
         print('request export to .xlsx')

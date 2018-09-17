@@ -22,8 +22,8 @@ class MainWindowMeasure(QMainWindow):
         self._ui = uic.loadUi('./mw_measure.ui', self)
 
         self._domainModel = DomainModel(self)
-        self._uiFacade = UiFacade(self, self._domainModel)
         self._plotWidget = PlotWidget(self, self._domainModel)
+        self._uiFacade = UiFacade(self, self._domainModel, self._plotWidget)
 
         self.actExportPng = QAction('Экспорт в .png', self)
         self.actExportExcel = QAction('Экспорт в Excel', self)
