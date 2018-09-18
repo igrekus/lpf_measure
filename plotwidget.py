@@ -110,10 +110,9 @@ class PlotWidget(QObject):
                 if ex.errno != errno.EEXIST:
                     raise IOError('Error creating image dir.')
 
-            try:
-                plt.savefig(img_path + 'img.png', dpi=400)
-            except Exception as ex:
-                print(ex)
+            for index, fname in enumerate(['stats.png', 'cutoff.png', 'delta.png']):
+                fig = plt.figure(index + 1)
+                fig.savefig(img_path + fname, dpi=400)
         else:
             raise ValueError('Unsupported format')
 
