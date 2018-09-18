@@ -37,6 +37,10 @@ class PlotWidget(QObject):
         self.cutoffDeltaCanvas = None
         self.cutoffDeltaToolbar = None
 
+        self.harmonicFigure = None
+        self.harmonicCanvas = None
+        self.harmonicToolbar = None
+
     def initPlots(self):
         plt.figure(num=1)
         self.mainFigure = plt.figure(1)
@@ -59,9 +63,17 @@ class PlotWidget(QObject):
         self.parent()._ui.cutoffDeltaLayout.addWidget(self.cutoffDeltaCanvas)
         self.parent()._ui.cutoffDeltaLayout.addWidget(self.cutoffDeltaCanvas.toolbar)
 
+        plt.figure(num=4)
+        self.harmonicFigure = plt.figure(4)
+        self.harmonicCanvas = FigureCanvas(self.harmonicFigure)
+        self.harmonicToolbar = NavToolbar(canvas=self.harmonicCanvas, parent=None)
+        self.parent()._ui.harmonicLayout.addWidget(self.harmonicCanvas)
+        self.parent()._ui.harmonicLayout.addWidget(self.harmonicCanvas.toolbar)
+
         self.resetPlots()
 
     def resetPlots(self):
+        # TODO: use self.XXXfigure
         plt.figure(1)
         plt.subplots_adjust(bottom=0.150)
         # plt.axhline(self._cutoffMag, 0, 1, linewidth=0.8, color="0.3", linestyle="--")
@@ -89,10 +101,21 @@ class PlotWidget(QObject):
         plt.ylabel("dF, МГц")
         plt.grid(True)
 
+        plt.figure(4)
+        plt.subplots_adjust(bottom=0.150)
+        plt.title("Коэффициент преобразования для N-гармоники")
+        plt.xscale("log")
+        plt.xlabel("F, Гц")
+        plt.ylabel("К-т пр., дБ")
+        plt.ylim([-60, 30])
+        plt.grid(b=True, which="minor", color="0.7", linestyle='--')
+        plt.grid(b=True, which="major", color="0.5", linestyle='-')
+
     def clearFigures(self):
         plt.figure(1).clear()
         plt.figure(2).clear()
         plt.figure(3).clear()
+        plt.figure(4).clear()
         self.resetPlots()
 
     def parseFreqStr(self, string):
@@ -110,7 +133,7 @@ class PlotWidget(QObject):
                 if ex.errno != errno.EEXIST:
                     raise IOError('Error creating image dir.')
 
-            for index, fname in enumerate(['stats.png', 'cutoff.png', 'delta.png']):
+            for index, fname in enumerate(['stats.png', 'cutoff.png', 'delta.png', 'harmonic.png']):
                 fig = plt.figure(index + 1)
                 fig.savefig(img_path + fname, dpi=400)
         else:
@@ -134,17 +157,15 @@ class PlotWidget(QObject):
         self.freqs.append(freq)
         self.amps.append(amp)
 
-        if not self._cutoffTickAdded:
-            # plt.yticks(list(plt.yticks())[0] + [self._cutoffMag])
-            plt.yticks(list(range(-60, 30, 10)) + [self._cutoffMag])
-            self._cutoffTickAdded = True
+        fig = plt.figure(1)
+        # if not self._cutoffTickAdded:
+        #     # plt.yticks(list(plt.yticks())[0] + [self._cutoffMag])
+        #     plt.yticks(list(range(-60, 30, 10)) + [self._cutoffMag])
+        #     self._cutoffTickAdded = True
 
-        plt.figure(1)
         plt.plot(freq, amp, color="0.4")
 
         self.mainFigure.canvas.draw()
-
-        # print(self._domainModel._lastMeasurement)
 
     @pyqtSlot(name='measurementFinished')
     def measurementFinished(self):
@@ -178,4 +199,8 @@ class PlotWidget(QObject):
         fig = plt.figure(3)
         plt.plot(self.cutoff_freq_delta_x, self.cutoff_freq_delta_y, color="0.4")
         fig.canvas.draw()
+
+    @pyqtSlot(name='harmonicMeasured')
+    def harmonicMeasured(self):
+        print('Рисуем график для N гармоники.')
 

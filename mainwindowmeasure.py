@@ -29,6 +29,7 @@ class MainWindowMeasure(QMainWindow):
         self.actExportExcel = QAction('Экспорт в Excel', self)
         self.actMeasure = QAction('Запустить измерение', self)
         self.actFindInstruments = QAction('Поиск оборудования', self)
+        self.actMeasureHarmonic = QAction('Измерить N-гармонику', self)
 
         self.initDialog()
 
@@ -45,6 +46,9 @@ class MainWindowMeasure(QMainWindow):
         self.actExportExcel.setStatusTip('Экспортировать графики Excel-таблицу')
         self.actExportExcel.triggered.connect(self.procActExportExcel)
 
+        self.actMeasureHarmonic.setStatusTip('Запустить измерение N-гармоники')
+        self.actMeasureHarmonic.triggered.connect(self.procActMeasureHarmonic)
+
     def setupSignals(self):
         # plot
         self._domainModel.dataPointMeasured.connect(self._plotWidget.processDataPoint)
@@ -56,6 +60,7 @@ class MainWindowMeasure(QMainWindow):
         self._ui.btnFindInstruments.clicked.connect(self.onBtnFindInstrumentsClicked)
         self._ui.btnExportPng.clicked.connect(self.onBtnExportPngClicked)
         self._ui.btnExportExcel.clicked.connect(self.onBtnExportExcelClicked)
+        self._ui.btnMeasureHarmonic.clicked.connect(self.onBtnMeasureHarmonic)
 
         # input widgets
         self._ui.spinCutoffMagnitude.valueChanged.connect(self.onSpinCutoffMagnitudeValueChanged)
@@ -96,6 +101,9 @@ class MainWindowMeasure(QMainWindow):
     def onBtnMeasureClicked(self):
         self.actMeasure.trigger()
 
+    def onBtnMeasureHarmonic(self):
+        self.actMeasureHarmonic.trigger()
+
     def onSpinCutoffMagnitudeValueChanged(self, value):
         self._plotWidget.cutoffMag = value
 
@@ -121,4 +129,7 @@ class MainWindowMeasure(QMainWindow):
 
     def procActExportExcel(self):
         self._uiFacade.requestExportToExcel()
+
+    def procActMeasureHarmonic(self):
+        self._uiFacade.requestMeasureHarmonic(self._ui.spinHarmonic.value(), self._ui.spinCode.value() - 1)
 

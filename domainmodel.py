@@ -121,6 +121,9 @@ class DomainModel(QObject):
         self.measurementFinished.emit()
         print('Конец измерений.')
 
+    def measureHarmonic(self, harmonic, code):
+        print(f'Измеряем {harmonic} гармонику для code={code}...')
+
     @property
     def instrumentsReady(self):
         return bool(self._arduino) and bool(self._analyzer)

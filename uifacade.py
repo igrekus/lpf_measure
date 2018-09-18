@@ -19,6 +19,9 @@ class UiFacade(QObject):
     def requestMeasure(self):
         self._domainModel.measure()
 
+    def requestMeasureHarmonic(self, harmonic, code):
+        self._domainModel.measureHarmonic(harmonic, code)
+
     def requestExportToPng(self):
         print('request export to .png')
         self._plotWidget.exportPics('png')
