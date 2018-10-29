@@ -10,6 +10,21 @@ from obzor304mock import Obzor304Mock
 def_mock = True
 
 
+class MeasureContext:
+
+    def __init__(self, model):
+        self._model = model
+
+    def __enter__(self):
+        print('Начинаем измерения...')
+        self._model._analyzer.init_instrument()
+
+    def __exit__(self, *args):
+        self._model._analyzer.finish()
+        self._model._arduino.disconnect()
+        print('Конец измерений.')
+
+
 class DomainModel(QObject):
 
     COMMAND = 'LPF,'
@@ -18,6 +33,7 @@ class DomainModel(QObject):
 
     dataPointMeasured = pyqtSignal()
     measurementFinished = pyqtSignal()
+    harmonicMeasured = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -95,34 +111,37 @@ class DomainModel(QObject):
         print('Анализатор:', str(self._analyzer))
         return True
 
-    def measure(self):
-        print('Начинаем измерения...')
-        self._analyzer.init_instrument()
-        regs = self.MAXREG + 1
+    def measureCode(self, harmonic=1, code=0):
+        cmd = self.COMMAND + str(code)
+        print(f'\nИзмерение: code={str(code).zfill(3)}, bin={bin(code)}, command: {cmd}')
+        if not self._arduino.set_lpf_code(cmd):
+            print('Ошибка при записи регистра:', cmd)
+            return
 
-        # MOCK:
+        self._lastMeasurement = self._analyzer.measure(code)
+        self.dataPointMeasured.emit()
+
+    def measure(self):
+        regs = self.MAXREG + 1
+        # MOCK
         if def_mock:
             regs = 5
 
-        for n in range(regs):
-            # for n in list(range(0, regs, 12)) + [127]:
-            # for n in range(5):
-            cmd = self.COMMAND + str(n)
-            print(f'\nИзмерение: code={str(n).zfill(3)}, bin={bin(n)}, command: {cmd}')
-            if not self._arduino.set_lpf_code(cmd):
-                print('Ошибка при записи регистра:', cmd)
-                continue
+        with MeasureContext(self):
+            for code in range(regs):
+                self.measureCode(code=code)
 
-            self._lastMeasurement = self._analyzer.measure(n)
-            self.dataPointMeasured.emit()
-
-        self._analyzer.finish()
-        self._arduino.disconnect()
         self.measurementFinished.emit()
-        print('Конец измерений.')
 
     def measureHarmonic(self, harmonic, code):
         print(f'Измеряем {harmonic} гармонику для code={code}...')
+        try:
+            with MeasureContext(self):
+                self.measureCode(harmonic=harmonic, code=code)
+        except Exception as ex:
+            print(ex)
+
+        self.harmonicMeasured.emit()
 
     @property
     def instrumentsReady(self):

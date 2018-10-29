@@ -8,6 +8,8 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavToolba
 
 class PlotWidget(QObject):
 
+    # TODO rewrite plotting
+
     def __init__(self, parent=None, domainModel=None):
         super().__init__(parent)
 
@@ -202,5 +204,16 @@ class PlotWidget(QObject):
 
     @pyqtSlot(name='harmonicMeasured')
     def harmonicMeasured(self):
+        self.clearFigures()
+        self.resetPlots()
+
+        xs = self.parseFreqStr(self._domainModel._lastMeasurement[0])
+        ys = self.parseAmpStr(self._domainModel._lastMeasurement[1])
+        cutoff_mag = self._cutoffMag
         print('Рисуем график для N гармоники.')
 
+        fig = plt.figure(4)
+        plt.plot(xs, ys, color='0.4')
+        plt.axhline(cutoff_mag, 0, 1, linewidth=0.8, color="0.3", linestyle="--")
+        plt.yticks(list(plt.yticks()[0]) + [cutoff_mag])
+        fig.canvas.draw()

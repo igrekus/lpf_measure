@@ -53,6 +53,7 @@ class MainWindowMeasure(QMainWindow):
         # plot
         self._domainModel.dataPointMeasured.connect(self._plotWidget.processDataPoint)
         self._domainModel.measurementFinished.connect(self._plotWidget.measurementFinished)
+        self._domainModel.harmonicMeasured.connect(self._plotWidget.harmonicMeasured)
 
         # ui
         # buttons
@@ -113,6 +114,7 @@ class MainWindowMeasure(QMainWindow):
             self._ui.editArduino.setText(str(self._domainModel._arduino))
             self._ui.editAnalyzer.setText(str(self._domainModel._analyzer))
             self._ui.btnMeasure.setEnabled(True)
+            self._ui.btnMeasureHarmonic.setEnabled(True)
             self._ui.btnFindInstruments.setEnabled(False)
             self._ui.spinCutoffMagnitude.setEnabled(False)
             self._plotWidget.clearFigures()
@@ -121,6 +123,7 @@ class MainWindowMeasure(QMainWindow):
         if self._domainModel.instrumentsReady:
             self._uiFacade.requestMeasure()
             self._ui.btnMeasure.setEnabled(False)
+            self._ui.btnMeasureHarmonic.setEnabled(False)
             self._ui.btnFindInstruments.setEnabled(True)
             self._ui.spinCutoffMagnitude.setEnabled(True)
 
@@ -131,5 +134,7 @@ class MainWindowMeasure(QMainWindow):
         self._uiFacade.requestExportToExcel()
 
     def procActMeasureHarmonic(self):
-        self._uiFacade.requestMeasureHarmonic(self._ui.spinHarmonic.value(), self._ui.spinCode.value() - 1)
+        if self._domainModel.instrumentsReady:
+            self._uiFacade.requestMeasureHarmonic(self._ui.spinHarmonic.value(), self._ui.spinCode.value() - 1)
+
 
