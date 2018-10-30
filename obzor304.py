@@ -68,5 +68,5 @@ class Obzor304:
         return freqs, amps
 
     def finish(self):
-        print('OBZOR-304: выключаем непрерывную подачу триггер-сигнала:', self.send('INITiate1:CONTinuous OFF'))
+        print('OBZOR-304: выключаем непрерывную подачу триггер-сигнала:', self.send('INITiate1:CONTinuous ON'))
         self.set_trigger_source('INT')
