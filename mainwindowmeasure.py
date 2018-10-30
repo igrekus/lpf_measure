@@ -135,6 +135,6 @@ class MainWindowMeasure(QMainWindow):
 
     def procActMeasureHarmonic(self):
         if self._domainModel.instrumentsReady:
-            self._uiFacade.requestMeasureHarmonic(self._ui.spinHarmonic.value(), self._ui.spinCode.value() - 1)
+            self._uiFacade.requestMeasureHarmonic(self._ui.spinHarmonic.value(), self._ui.spinCode.value())
 
 
