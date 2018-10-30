@@ -21,7 +21,7 @@ class MeasureContext:
 
     def __exit__(self, *args):
         self._model._analyzer.finish()
-        self._model._arduino.disconnect()
+        # self._model._arduino.disconnect()
         print('Конец измерений.')
 
 
@@ -131,16 +131,19 @@ class DomainModel(QObject):
             for code in range(regs):
                 self.measureCode(code=code)
 
+        self._arduino.disconnect()
         self.measurementFinished.emit()
 
     def measureHarmonic(self, harmonic, code):
         print(f'Измеряем {harmonic} гармонику для code={code}...')
+        print(self._arduino.is_open())
         try:
             with MeasureContext(self):
                 self.measureCode(harmonic=harmonic, code=code)
         except Exception as ex:
             print(ex)
 
+        # self._arduino.disconnect()
         self.harmonicMeasured.emit()
 
     @property
