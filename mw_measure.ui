@@ -150,9 +150,12 @@
        <attribute name="title">
         <string>Измерения</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
         <item>
          <layout class="QVBoxLayout" name="layoutMainPlot"/>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="layoutDoubleTriple"/>
         </item>
        </layout>
       </widget>
