@@ -122,7 +122,8 @@ class MainWindowMeasure(QMainWindow):
     def procActMeasure(self):
         if self._domainModel.instrumentsReady:
             self._uiFacade.requestMeasure()
-            self._ui.btnMeasure.setEnabled(False)
+            self._plotWidget.clear()
+            # self._ui.btnMeasure.setEnabled(False)
             self._ui.btnMeasureHarmonic.setEnabled(False)
             self._ui.btnFindInstruments.setEnabled(True)
             self._ui.spinCutoffMagnitude.setEnabled(True)
@@ -135,6 +136,7 @@ class MainWindowMeasure(QMainWindow):
 
     def procActMeasureHarmonic(self):
         if self._domainModel.instrumentsReady:
+            self._plotWidget.clear()
             self._uiFacade.requestMeasureHarmonic(self._ui.spinHarmonic.value(), self._ui.spinCode.value())
 
 
