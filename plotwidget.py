@@ -49,6 +49,16 @@ class PlotWidget(QObject):
         self.doubleTripleCanvas = None
         self.doubleTripleToolbar = None
 
+    def clear(self):
+        self.freqs.clear()
+        self.amps.clear()
+        self.codes.clear()
+        self.cutoff_freqs.clear()
+        self.loss_double_freq.clear()
+        self.loss_triple_freq.clear()
+        self.cutoff_freq_delta_x.clear()
+        self.cutoff_freq_delta_y.clear()
+
     def initPlots(self):
         plt.figure(num=1)
         self.mainFigure = plt.figure(1)
@@ -213,7 +223,7 @@ class PlotWidget(QObject):
             self.loss_triple_freq.append(a[triple_f_index])
 
         self.cutoff_freqs = list(reversed(self.cutoff_freqs))
-        self.codes = range(len(self.cutoff_freqs))
+        self.codes = list(range(len(self.cutoff_freqs)))
 
         fig = plt.figure(1)
         plt.axhline(cutoff_mag, 0, 1, linewidth=0.8, color='0.3', linestyle='--')
@@ -229,24 +239,20 @@ class PlotWidget(QObject):
             d = abs(self.cutoff_freqs[i + 1] - self.cutoff_freqs[i])
             self.cutoff_freq_delta_y.append(d)
 
-        self.cutoff_freq_delta_x = range(len(self.cutoff_freq_delta_y))
+        self.cutoff_freq_delta_x = list(range(len(self.cutoff_freq_delta_y)))
 
         fig = plt.figure(3)
         plt.plot(self.cutoff_freq_delta_x, self.cutoff_freq_delta_y, color='0.4')
         fig.canvas.draw()
 
         fig = plt.figure(5)
-        try:
-            plt.plot(self.codes, self.loss_double_freq, color='blue')
-            plt.plot(self.codes, self.loss_triple_freq, color='red')
-        except Exception as ex:
-            print(ex)
+        plt.plot(self.codes, self.loss_double_freq, color='blue')
+        plt.plot(self.codes, self.loss_triple_freq, color='red')
         fig.canvas.draw()
 
     @pyqtSlot(name='harmonicMeasured')
     def harmonicMeasured(self):
         self.clearFigures()
-        self.resetPlots()
 
         xs = self.parseFreqStr(self._domainModel._lastMeasurement[0])
         ys = self.parseAmpStr(self._domainModel._lastMeasurement[1])
